@@ -22,54 +22,6 @@ interface AnalysisData {
   draftedReply: string;
 }
 
-// Simple rule-based analyzer
-function analyzeEmailLocally(emailText: string): AnalysisData {
-  const text = emailText.toLowerCase();
-
-  // Determine purpose
-  let purpose = "General Inquiry";
-  if (text.includes("purchase order") || text.includes("po ")) purpose = "Purchase Order";
-  else if (text.includes("invoice") || text.includes("payment")) purpose = "Invoice";
-  else if (text.includes("compliance") || text.includes("audit")) purpose = "Compliance Request";
-
-  // Check for payment delay
-  const paymentDelayed = text.includes("delay") || text.includes("late") || text.includes("overdue");
-
-  // Risk level based on urgency words
-  let riskLevel: "low" | "medium" | "high" = "low";
-  if (text.includes("urgent") || text.includes("immediate") || text.includes("overdue")) riskLevel = "high";
-  else if (text.includes("review") || text.includes("pending") || paymentDelayed) riskLevel = "medium";
-
-  // Suggested action
-  let suggestedAction = "Monitor and respond appropriately.";
-  if (purpose === "Purchase Order") suggestedAction = "Acknowledge receipt and confirm delivery dates.";
-  else if (purpose === "Invoice") suggestedAction = "Check payment terms and prepare for payment.";
-  else if (paymentDelayed) suggestedAction = "Follow up with accounts payable to resolve delay.";
-
-  // Draft reply
-  const draftedReply = `Subject: Re: ${emailText.split('\n')[0] || 'Your email'}
-
-Dear [Contact Name],
-
-Thank you for your email. ${purpose === "Invoice" ? "We have received your invoice and will process it according to our payment terms." : 
-  purpose === "Purchase Order" ? "We acknowledge receipt of your purchase order and will begin processing." :
-  "We will review your request and get back to you shortly."}
-
-${paymentDelayed ? "Regarding the payment delay, we are looking into it and will update you soon." : ""}
-
-Best regards,
-[Your Name]
-[Your Company]`;
-
-  return {
-    purpose,
-    paymentDelayed,
-    riskLevel,
-    suggestedAction,
-    draftedReply
-  };
-}
-
 export function EmailAnalysis() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -84,17 +36,22 @@ export function EmailAnalysis() {
     }
 
     setLoading(true);
-    // Simulate processing delay (remove if you want instant results)
-    setTimeout(() => {
-      const result = analyzeEmailLocally(email);
-      setAnalysis(result);
-      setLoading(false);
-    }, 800); // 800ms delay – gives a realistic feel
+
+    fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ emailContent: email }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setAnalysis(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, [email, router]);
 
   const handleGenerate = () => {
     if (!analysis) return;
-    // Save data to sessionStorage to pass to response page
     sessionStorage.setItem("analysis", JSON.stringify(analysis));
     sessionStorage.setItem("email", email || "");
     router.push("/response");
@@ -129,13 +86,11 @@ export function EmailAnalysis() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Purpose */}
           <div>
             <h3 className="text-sm font-medium text-muted-foreground mb-2">Email Purpose</h3>
             <p className="text-lg font-semibold">{analysis.purpose}</p>
           </div>
 
-          {/* Payment Status & Risk */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <h3 className="text-sm font-medium text-muted-foreground mb-2">Payment Status</h3>
@@ -154,14 +109,12 @@ export function EmailAnalysis() {
             </div>
           </div>
 
-          {/* Suggested Action */}
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Suggested Action</AlertTitle>
             <AlertDescription>{analysis.suggestedAction}</AlertDescription>
           </Alert>
 
-          {/* Generate Button */}
           <div className="pt-4">
             <Button onClick={handleGenerate} size="lg" className="w-full md:w-auto">
               Generate Follow-up Email
