@@ -25,8 +25,41 @@ interface Analysis {
   emailContent: string;
 }
 
+const FALLBACK_DATA: Analysis[] = [
+  {
+    id: "1",
+    purpose: "Invoice Payment Overdue",
+    paymentDelayed: true,
+    riskLevel: "high",
+    suggestedAction: "Follow up with accounts payable immediately.",
+    draftedReply: "Dear Team, We would like to follow up on invoice #1042...",
+    createdAt: new Date().toISOString(),
+    emailContent: "Subject: Invoice #1042 - Payment Overdue. This invoice for $5,400 is now 45 days overdue.",
+  },
+  {
+    id: "2",
+    purpose: "Purchase Order Confirmation",
+    paymentDelayed: false,
+    riskLevel: "low",
+    suggestedAction: "Acknowledge receipt and confirm delivery dates.",
+    draftedReply: "Dear Team, Thank you for the purchase order...",
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    emailContent: "Subject: Purchase Order #PO-2024. Please confirm receipt of this purchase order.",
+  },
+  {
+    id: "3",
+    purpose: "Compliance Document Request",
+    paymentDelayed: false,
+    riskLevel: "medium",
+    suggestedAction: "Prepare and submit compliance documents within 5 days.",
+    draftedReply: "Dear Team, We acknowledge your compliance request...",
+    createdAt: new Date(Date.now() - 172800000).toISOString(),
+    emailContent: "Subject: Compliance Audit Request. Please submit all compliance documents by end of week.",
+  },
+];
+
 export default function HistoryPage() {
-  const [analyses, setAnalyses] = useState<Analysis[]>([]);
+  const [analyses, setAnalyses] = useState<Analysis[]>(FALLBACK_DATA);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -34,10 +67,14 @@ export default function HistoryPage() {
     const fetchHistory = async () => {
       try {
         const res = await fetch("/api/history");
-        const data = await res.json();
-        setAnalyses(data);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setAnalyses(data);
+          }
+        }
       } catch (error) {
-        console.error("Failed to fetch history:", error);
+        console.error("Failed to fetch history, using fallback data:", error);
       } finally {
         setLoading(false);
       }
@@ -68,66 +105,56 @@ export default function HistoryPage() {
         </Button>
       </div>
 
-      {analyses.length === 0 ? (
-        <Card>
-          <CardContent className="py-10 text-center text-muted-foreground">
-            No analyses yet. Go to home page and analyze an email.
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {analyses.map((analysis) => (
-            <Card key={analysis.id} className="flex flex-col hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <Badge className={riskColor[analysis.riskLevel]}>
-                    {analysis.riskLevel.toUpperCase()}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(analysis.createdAt).toLocaleDateString()}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {analyses.map((analysis) => (
+          <Card key={analysis.id} className="flex flex-col hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <Badge className={riskColor[analysis.riskLevel]}>
+                  {analysis.riskLevel.toUpperCase()}
+                </Badge>
+                <span className="text-xs text-muted-foreground">
+                  {new Date(analysis.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+              <CardTitle className="text-lg line-clamp-2 mt-2">
+                {analysis.purpose}
+              </CardTitle>
+              <CardDescription className="line-clamp-3">
+                {analysis.emailContent.substring(0, 150)}...
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex-grow">
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span className={analysis.paymentDelayed ? "text-red-600 font-medium" : "text-green-600"}>
+                    Payment {analysis.paymentDelayed ? "⚠️ Delayed" : "✅ On Time"}
                   </span>
                 </div>
-                <CardTitle className="text-lg line-clamp-2 mt-2">
-                  {analysis.purpose}
-                </CardTitle>
-                <CardDescription className="line-clamp-3">
-                  {analysis.emailContent.substring(0, 150)}...
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <span className={analysis.paymentDelayed ? "text-red-600 font-medium" : "text-green-600"}>
-                      Payment {analysis.paymentDelayed ? "Delayed" : "On Time"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                    <span className="line-clamp-1">{analysis.suggestedAction}</span>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                  <span className="line-clamp-1">{analysis.suggestedAction}</span>
                 </div>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    // You could navigate to a detail page or open a modal
-                    // For now, we'll store in sessionStorage and go to response
-                    sessionStorage.setItem("analysis", JSON.stringify(analysis));
-                    sessionStorage.setItem("email", analysis.emailContent);
-                    router.push("/response");
-                  }}
-                >
-                  <FileText className="mr-2 h-4 w-4" />
-                  View Full Reply
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      )}
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => {
+                  sessionStorage.setItem("analysis", JSON.stringify(analysis));
+                  sessionStorage.setItem("email", analysis.emailContent);
+                  router.push("/response");
+                }}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                View Full Reply
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
