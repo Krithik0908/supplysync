@@ -21,8 +21,9 @@ export function EmailPasteForm() {
     e.preventDefault()
     if (!email.trim()) return
 
-    // Navigate to analysis page with email as query parameter
-    router.push(`/analysis?email=${encodeURIComponent(email)}`)
+    // Store in sessionStorage instead of URL
+    sessionStorage.setItem("emailContent", email)
+    router.push("/analysis")
   }
 
   return (
