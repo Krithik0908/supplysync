@@ -166,7 +166,7 @@ export default function Dashboard() {
     sessionStorage.setItem("analysis", JSON.stringify(analysis));
     sessionStorage.setItem("email", analysis.emailContent || "");
     sessionStorage.setItem("emailContent", analysis.emailContent || "");
-    router.push("/response");
+    router.push("/analysis-details");
   };
 
   return (
@@ -290,8 +290,16 @@ export default function Dashboard() {
                       <TableRow
                         key={analysis.id}
                         ref={(el) => { rowsRef.current[index] = el; }}
-                        className="cursor-pointer border-white/10 transition-colors hover:bg-white/12 group"
+                        className="ui-interactive ui-focus cursor-pointer border-white/10 transition-colors hover:bg-white/12 group"
+                        role="button"
+                        tabIndex={0}
                         onClick={() => handleViewDetails(analysis)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            handleViewDetails(analysis);
+                          }
+                        }}
                       >
                         <TableCell className="font-medium text-white">
                           {new Date(analysis.createdAt).toLocaleDateString()}

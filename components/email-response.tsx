@@ -69,12 +69,24 @@ export function EmailResponse() {
     }
   };
 
+  if (!analysisData) {
+    return (
+      <div className="w-full max-w-3xl mx-auto">
+        <Card className="border-white/10 bg-white/10 text-white backdrop-blur-xl">
+          <CardContent className="py-12 text-center text-white/70">
+            Loading response details...
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-3xl mx-auto">
       <Card className="border-white/10 bg-white/10 text-white backdrop-blur-xl">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <Button variant="ghost" size="sm" className="text-white/80 hover:bg-white/10 hover:text-white" onClick={() => router.back()}>
+            <Button variant="ghost" size="sm" className="ui-interactive ui-press ui-focus text-white/80 hover:bg-white/10 hover:text-white" onClick={() => router.back()}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
@@ -90,7 +102,7 @@ export function EmailResponse() {
             {responseEmail}
           </div>
           <div className="flex justify-end gap-3">
-            <Button onClick={copyToClipboard} variant="outline" className="border-white/20 bg-white/5 text-white hover:bg-white/10">
+            <Button onClick={copyToClipboard} variant="outline" className="ui-interactive ui-press ui-focus border-white/20 bg-white/5 text-white hover:bg-white/10">
               {copied ? (
                 <>
                   <Check className="mr-2 h-4 w-4" />
@@ -103,7 +115,7 @@ export function EmailResponse() {
                 </>
               )}
             </Button>
-            <Button onClick={downloadPDF} disabled={downloading} className="bg-linear-to-r from-blue-500 to-violet-500 text-white hover:from-blue-400 hover:to-violet-400">
+            <Button onClick={downloadPDF} disabled={downloading} className="ui-interactive ui-press ui-focus bg-linear-to-r from-blue-500 to-violet-500 text-white hover:from-blue-400 hover:to-violet-400">
               <Download className="mr-2 h-4 w-4" />
               {downloading ? "Generating PDF..." : "Download PDF"}
             </Button>

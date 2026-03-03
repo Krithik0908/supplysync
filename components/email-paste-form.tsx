@@ -27,7 +27,7 @@ export function EmailPasteForm() {
   }
 
   return (
-    <Card className="w-full max-w-2xl border-white/10 bg-white/10 text-white backdrop-blur-xl">
+    <Card className="ui-card-hover w-full max-w-2xl border-white/10 bg-white/10 text-white backdrop-blur-xl">
       <CardHeader>
         <div className="flex items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-lg bg-linear-to-br from-blue-500 to-purple-600 shadow-lg shadow-purple-500/20">
@@ -51,10 +51,10 @@ export function EmailPasteForm() {
             placeholder="Paste your email here..."
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="min-h-60 resize-y border-white/15 bg-black/35 text-base leading-relaxed text-white placeholder:text-white/45"
+            className="ui-focus min-h-60 resize-y border-white/15 bg-black/35 text-base leading-relaxed text-white placeholder:text-white/45"
           />
           <div className="flex items-center justify-between">
-            <p className="text-sm text-white/60">
+            <p className="text-sm text-white/60" aria-live="polite">
               {email.length > 0
                 ? `${email.length.toLocaleString()} characters`
                 : "No content yet"}
@@ -62,7 +62,7 @@ export function EmailPasteForm() {
             <Button
               type="submit"
               size="lg"
-              className="bg-linear-to-r from-blue-500 to-violet-500 text-white hover:from-blue-400 hover:to-violet-400"
+              className="ui-interactive ui-press ui-focus bg-linear-to-r from-blue-500 to-violet-500 text-white hover:from-blue-400 hover:to-violet-400"
               disabled={!email.trim()}
             >
               <Send className="size-4 mr-2" />

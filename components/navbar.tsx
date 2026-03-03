@@ -35,7 +35,7 @@ export function Navbar() {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-white/95 transition-all",
+                    "ui-interactive ui-focus flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-white/95 transition-all",
                     isActive
                       ? "bg-white/15 text-white shadow-inner"
                       : "hover:bg-white/10 hover:text-white"
