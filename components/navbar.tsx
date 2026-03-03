@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, LayoutDashboard, History } from "lucide-react";
+import { Home, LayoutDashboard, History, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { name: "Home", href: "/", icon: Home },
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "History", href: "/history", icon: History },
+  { name: "Suppliers", href: "/suppliers", icon: Building2 },
 ];
 
 export function Navbar() {

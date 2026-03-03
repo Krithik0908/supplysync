@@ -61,6 +61,7 @@ const FALLBACK_DATA: Analysis[] = [
 export default function HistoryPage() {
   const [analyses, setAnalyses] = useState<Analysis[]>(FALLBACK_DATA);
   const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState<"all" | "high" | "delayed" | "low">("all");
   const router = useRouter();
 
   useEffect(() => {
@@ -88,6 +89,28 @@ export default function HistoryPage() {
     high: "border-rose-300/40 bg-rose-500/20 text-rose-200",
   };
 
+  const filteredAnalyses = analyses.filter((analysis) => {
+    if (activeFilter === "high") return analysis.riskLevel === "high";
+    if (activeFilter === "delayed") return analysis.paymentDelayed;
+    if (activeFilter === "low") return analysis.riskLevel === "low";
+    return true;
+  });
+
+  const lowCount = analyses.filter((analysis) => analysis.riskLevel === "low").length;
+  const mediumCount = analyses.filter((analysis) => analysis.riskLevel === "medium").length;
+  const highCount = analyses.filter((analysis) => analysis.riskLevel === "high").length;
+  const totalCount = analyses.length || 1;
+
+  const lowPercent = Math.round((lowCount / totalCount) * 100);
+  const mediumPercent = Math.round((mediumCount / totalCount) * 100);
+  const highPercent = Math.round((highCount / totalCount) * 100);
+
+  const radius = 52;
+  const circumference = 2 * Math.PI * radius;
+  const lowArc = (lowCount / totalCount) * circumference;
+  const mediumArc = (mediumCount / totalCount) * circumference;
+  const highArc = circumference - lowArc - mediumArc;
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -111,8 +134,107 @@ export default function HistoryPage() {
         </Button>
       </div>
 
+      <Card className="border-white/10 bg-white/10 text-white backdrop-blur-xl">
+        <CardHeader>
+          <CardTitle className="text-xl">Risk Distribution</CardTitle>
+          <CardDescription className="text-white/65">
+            Low vs Medium vs High risk emails
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="flex items-center justify-center">
+            <div className="relative h-36 w-36">
+              <svg viewBox="0 0 140 140" className="h-full w-full -rotate-90">
+                <circle cx="70" cy="70" r={radius} className="fill-none stroke-white/10" strokeWidth="16" />
+                <circle
+                  cx="70"
+                  cy="70"
+                  r={radius}
+                  className="fill-none text-emerald-400"
+                  stroke="currentColor"
+                  strokeWidth="16"
+                  strokeDasharray={`${lowArc} ${circumference - lowArc}`}
+                  strokeLinecap="butt"
+                />
+                <circle
+                  cx="70"
+                  cy="70"
+                  r={radius}
+                  className="fill-none text-amber-400"
+                  stroke="currentColor"
+                  strokeWidth="16"
+                  strokeDasharray={`${mediumArc} ${circumference - mediumArc}`}
+                  strokeDashoffset={-lowArc}
+                  strokeLinecap="butt"
+                />
+                <circle
+                  cx="70"
+                  cy="70"
+                  r={radius}
+                  className="fill-none text-rose-400"
+                  stroke="currentColor"
+                  strokeWidth="16"
+                  strokeDasharray={`${highArc} ${circumference - highArc}`}
+                  strokeDashoffset={-(lowArc + mediumArc)}
+                  strokeLinecap="butt"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-white/90">
+                {analyses.length} Emails
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-3 text-sm">
+            <div className="rounded-lg border border-emerald-300/25 bg-emerald-500/10 p-3">
+              <div className="font-medium text-emerald-200">Low Risk</div>
+              <div className="text-white/80">{lowCount} emails ({lowPercent}%)</div>
+            </div>
+            <div className="rounded-lg border border-amber-300/25 bg-amber-500/10 p-3">
+              <div className="font-medium text-amber-200">Medium Risk</div>
+              <div className="text-white/80">{mediumCount} emails ({mediumPercent}%)</div>
+            </div>
+            <div className="rounded-lg border border-rose-300/25 bg-rose-500/10 p-3">
+              <div className="font-medium text-rose-200">High Risk</div>
+              <div className="text-white/80">{highCount} emails ({highPercent}%)</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant={activeFilter === "all" ? "default" : "outline"}
+          className={activeFilter === "all" ? "bg-linear-to-r from-blue-500 to-violet-500 text-white" : "border-white/20 bg-white/5 text-white hover:bg-white/10"}
+          onClick={() => setActiveFilter("all")}
+        >
+          All
+        </Button>
+        <Button
+          variant={activeFilter === "high" ? "default" : "outline"}
+          className={activeFilter === "high" ? "bg-linear-to-r from-blue-500 to-violet-500 text-white" : "border-white/20 bg-white/5 text-white hover:bg-white/10"}
+          onClick={() => setActiveFilter("high")}
+        >
+          High Risk
+        </Button>
+        <Button
+          variant={activeFilter === "delayed" ? "default" : "outline"}
+          className={activeFilter === "delayed" ? "bg-linear-to-r from-blue-500 to-violet-500 text-white" : "border-white/20 bg-white/5 text-white hover:bg-white/10"}
+          onClick={() => setActiveFilter("delayed")}
+        >
+          Payment Delayed
+        </Button>
+        <Button
+          variant={activeFilter === "low" ? "default" : "outline"}
+          className={activeFilter === "low" ? "bg-linear-to-r from-blue-500 to-violet-500 text-white" : "border-white/20 bg-white/5 text-white hover:bg-white/10"}
+          onClick={() => setActiveFilter("low")}
+        >
+          Low Risk
+        </Button>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {analyses.map((analysis) => (
+        {filteredAnalyses.map((analysis) => (
           <Card key={analysis.id} className="flex flex-col border-white/10 bg-white/10 text-white backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/30">
             <CardHeader>
               <div className="flex justify-between items-start">
@@ -161,6 +283,14 @@ export default function HistoryPage() {
           </Card>
         ))}
       </div>
+
+      {filteredAnalyses.length === 0 && (
+        <Card className="border-white/10 bg-white/10 text-white backdrop-blur-xl">
+          <CardContent className="py-8 text-center text-white/75">
+            No emails match this filter.
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
