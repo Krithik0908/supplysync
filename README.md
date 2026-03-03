@@ -1,10 +1,10 @@
 ```markdown
-# SupplySync - AI-Powered Email Assistant for Small Suppliers
+ SupplySync - AI-Powered Email Assistant for Small Suppliers
 
 
 SupplySync helps small suppliers manage emails from large companies instantly. Paste any supplier email and get AI-powered analysis, payment delay detection, risk assessment, and auto-generated responses.
 
-## ✨ Features
+ ✨ Features
 
 - **🤖 AI Email Analysis** - Instant analysis using Groq API (Llama 3.3 70B)
 - **💰 Payment Delay Detection** - Automatically identifies delayed payments
@@ -15,11 +15,11 @@ SupplySync helps small suppliers manage emails from large companies instantly. P
 - **📄 PDF Generator** - Create professional payment reminder documents
 - **🎨 Beautiful UI** - Modern, responsive design with 21st.dev components
 
-## 🚀 Live Demo
+ 🚀 Live Demo
 
  (https://supplysync-five.vercel.app/)
 
-## 🛠️ Tech Stack
+ 🛠️ Tech Stack
 
 - **Frontend:** Next.js 14, TypeScript, Tailwind CSS, 21st.dev components
 - **UI Library:** shadcn/ui, Framer Motion, Lucide Icons
@@ -31,7 +31,7 @@ SupplySync helps small suppliers manage emails from large companies instantly. P
 
 
 
-## 🏗️ Installation
+ 🏗️ Installation
 
 1. Clone the repository:
 ```bash
@@ -57,20 +57,20 @@ npm run dev
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 🗄️ MongoDB Setup
+ 🗄️ MongoDB Setup
 
 1. Create a free [MongoDB Atlas](https://www.mongodb.com/atlas) account
 2. Create a new cluster
 3. Get your connection string
 4. Add it to `.env.local` as `MONGODB_URI`
 
-## 🤖 Groq API Setup
+ 🤖 Groq API Setup
 
 1. Sign up for [Groq](https://console.groq.com)
 2. Get your API key
 3. Add it to `.env.local` as `GROQ_API_KEY`
 
-## 📁 Project Structure
+ 📁 Project Structure
 
 ```
 supplysync/
@@ -93,29 +93,29 @@ supplysync/
 └── public/              # Static assets
 ```
 
-## 🎯 Key Features Explained
+ 🎯 Key Features Explained
 
-### Email Analysis
+ Email Analysis
 - Paste any supplier email
 - AI extracts purpose, payment status, risk level
 - Get suggested actions instantly
 
-### Dashboard
+ Dashboard
 - Real-time stats overview
 - Filter by risk level
 - Quick access to recent analyses
 
-### History
+ History
 - View all past analyses
 - Search and filter capabilities
 - One-click access to responses
 
-### PDF Generation
+ PDF Generation
 - Create professional payment reminders
 - Include analysis summary
 - Download and print ready
 
-## 🚀 Deployment
+ 🚀 Deployment
 
 This project is optimized for Vercel deployment:
 
@@ -124,23 +124,23 @@ This project is optimized for Vercel deployment:
 3. Add environment variables
 4. Deploy automatically
 
-## 🤝 Contributing
+ 🤝 Contributing
 
 Contributions are welcome! Feel free to open issues or submit pull requests.
 
-## 📝 License
+ 📝 License
 
 MIT License - feel free to use this project for your own purposes.
 
 
-## 📧 Contact
+ 📧 Contact
 
 Krithik 
 
 Project Link: (https://github.com/Krithik0908/supplysync)
 ```
 
-## Instructions:
+ Instructions:
 
 1. Replace placeholder text:
    - `your-vercel-url.vercel.app` with your actual Vercel URL
