@@ -140,12 +140,5 @@ Krithik (krithiksaravanan0902@gmail.com)
 Project Link: (https://github.com/Krithik0908/supplysync)
 ```
 
- Instructions:
 
-Commit and push:
-```bash
-git add README.md
-git commit -m "Add comprehensive README"
-git push
-```
 
