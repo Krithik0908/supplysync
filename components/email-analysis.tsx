@@ -18,6 +18,8 @@ interface AnalysisData {
   purpose: string;
   paymentDelayed: boolean;
   riskLevel: "low" | "medium" | "high";
+  confidenceScore?: number;
+  reasoning?: string;
   suggestedAction: string;
   draftedReply: string;
 }
@@ -34,8 +36,6 @@ export function EmailAnalysis() {
       router.push("/");
       return;
     }
-
-    setLoading(true);
 
     fetch("/api/analyze", {
       method: "POST",
@@ -132,9 +132,17 @@ export function EmailAnalysis() {
               <h3 className="mb-2 text-sm font-medium text-white/60">
                 Risk Level
               </h3>
-              <Badge className={`${riskColor[analysis.riskLevel]} px-3 py-1`}>
-                {analysis.riskLevel.toUpperCase()}
-              </Badge>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge className={`${riskColor[analysis.riskLevel]} px-3 py-1`}>
+                  {analysis.riskLevel.toUpperCase()}
+                </Badge>
+                <Badge className="border-cyan-300/40 bg-cyan-500/20 px-3 py-1 text-cyan-200">
+                  AI Confidence: {Math.max(0, Math.min(100, Number(analysis.confidenceScore) || 0))}%
+                </Badge>
+              </div>
+              <p className="mt-3 text-sm text-white/80">
+                {analysis.reasoning || "Risk level is based on payment delay, language urgency, and business impact in the email."}
+              </p>
             </div>
           </div>
 

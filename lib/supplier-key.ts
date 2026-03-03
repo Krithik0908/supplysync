@@ -1,0 +1,1 @@
+export const SUPPLIER_KEY = (process.env.DEMO_SUPPLIER_KEY || "public-demo").trim().toLowerCase();

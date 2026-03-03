@@ -16,13 +16,38 @@ import { AlertCircle, Clock, FileText, TrendingUp, Shield, Zap, ArrowRight, Spar
 
 interface Analysis {
   id: string;
+  subject?: string;
+  supplierEmail?: string;
   purpose: string;
   paymentDelayed: boolean;
   riskLevel: "low" | "medium" | "high";
   suggestedAction: string;
   draftedReply: string;
+  invoiceAmount?: number;
+  delayDays?: number;
+  responseSent?: boolean;
+  respondedAt?: string | null;
   createdAt: string;
   emailContent: string;
+}
+
+interface KpiSummary {
+  overdueAmount: number;
+  moneyAtRisk: number;
+  atRiskInvoices: number;
+  averagePaymentDelay: number;
+  averageResponseHours: number;
+  recoveryRate: number;
+  supplierRiskScore: number;
+}
+
+interface AlertItem {
+  id: string;
+  title?: string;
+  message: string;
+  level: "low" | "medium" | "high";
+  type: string;
+  createdAt: string;
 }
 
 const FALLBACK_DATA: Analysis[] = [
@@ -60,8 +85,23 @@ const FALLBACK_DATA: Analysis[] = [
 
 export default function Dashboard() {
   const [analyses, setAnalyses] = useState<Analysis[]>(FALLBACK_DATA);
+  const [kpis, setKpis] = useState<KpiSummary>({
+    overdueAmount: 0,
+    moneyAtRisk: 0,
+    atRiskInvoices: 0,
+    averagePaymentDelay: 0,
+    averageResponseHours: 0,
+    recoveryRate: 0,
+    supplierRiskScore: 0,
+  });
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isLive, setIsLive] = useState(false);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<string>("");
+  const [toastMessage, setToastMessage] = useState("");
   const router = useRouter();
+  const previousHighAlertCountRef = useRef(0);
+  const initialLoadRef = useRef(true);
 
   // Refs for animation targets
   const titleRef = useRef(null);
@@ -70,23 +110,76 @@ export default function Dashboard() {
   const rowsRef = useRef<(HTMLTableRowElement | null)[]>([]);
 
   useEffect(() => {
-    const fetchHistory = async () => {
+    const fetchDashboardData = async (isBackgroundRefresh = false) => {
       try {
-        const res = await fetch("/api/history");
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            setAnalyses(data);
+        if (!isBackgroundRefresh) {
+          await fetch("/api/mail/sync", { method: "POST" }).catch(() => undefined);
+        }
+
+        const [historyRes, kpiRes, alertsRes] = await Promise.all([
+          fetch("/api/history"),
+          fetch("/api/kpis"),
+          fetch("/api/alerts"),
+        ]);
+
+        if (historyRes.ok) {
+          const historyData = await historyRes.json();
+          if (Array.isArray(historyData) && historyData.length > 0) {
+            setAnalyses(historyData);
           }
         }
+
+        if (kpiRes.ok) {
+          const kpiData = await kpiRes.json();
+          setKpis({
+            overdueAmount: Number(kpiData.overdueAmount) || 0,
+            moneyAtRisk: Number(kpiData.moneyAtRisk) || Number(kpiData.overdueAmount) || 0,
+            atRiskInvoices: Number(kpiData.atRiskInvoices) || 0,
+            averagePaymentDelay: Number(kpiData.averagePaymentDelay) || 0,
+            averageResponseHours: Number(kpiData.averageResponseHours) || 0,
+            recoveryRate: Number(kpiData.recoveryRate) || 0,
+            supplierRiskScore: Number(kpiData.supplierRiskScore) || 0,
+          });
+        }
+
+        if (alertsRes.ok) {
+          const alertData = await alertsRes.json();
+          if (Array.isArray(alertData)) {
+            setAlerts(alertData);
+
+            const currentHighAlertCount = alertData.filter((alert: AlertItem) => alert.level === "high").length;
+            if (!initialLoadRef.current && currentHighAlertCount > previousHighAlertCountRef.current) {
+              setToastMessage("⚠️ New high-risk email detected!");
+            }
+            previousHighAlertCountRef.current = currentHighAlertCount;
+          }
+        }
+
+        setIsLive(true);
+        setLastUpdatedAt(new Date().toLocaleTimeString());
       } catch (error) {
         console.error("Failed to fetch history, using fallback data:", error);
+        setIsLive(false);
       } finally {
+        initialLoadRef.current = false;
         setLoading(false);
       }
     };
-    fetchHistory();
+
+    fetchDashboardData();
+
+    const refreshInterval = window.setInterval(() => {
+      fetchDashboardData(true);
+    }, 30000);
+
+    return () => window.clearInterval(refreshInterval);
   }, []);
+
+  useEffect(() => {
+    if (!toastMessage) return;
+    const timer = window.setTimeout(() => setToastMessage(""), 3500);
+    return () => window.clearTimeout(timer);
+  }, [toastMessage]);
 
   useEffect(() => {
     if (!loading) {
@@ -175,9 +268,13 @@ export default function Dashboard() {
       <div className="relative z-10 container mx-auto p-6 md:p-8">
         {/* Header with glow effect */}
         <div className="mb-10 text-center md:mb-12">
-          <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-full border border-violet-300/25 bg-violet-500/15 px-4 py-1 text-sm font-medium text-violet-200">
+          <div className="mx-auto mb-4 flex w-fit flex-wrap items-center justify-center gap-2 rounded-full border border-violet-300/25 bg-violet-500/15 px-4 py-1 text-sm font-medium text-violet-200">
             <Sparkles className="h-4 w-4" />
             Real-time supplier intelligence
+            <Badge className={isLive ? "bg-emerald-500/85 text-white" : "bg-rose-500/85 text-white"}>
+              {isLive ? "LIVE" : "OFFLINE"}
+            </Badge>
+            {lastUpdatedAt && <span className="text-xs text-white/80">Updated {lastUpdatedAt}</span>}
           </div>
           <h1 
             ref={titleRef}
@@ -260,6 +357,105 @@ export default function Dashboard() {
             </Card>
           </div>
         </div>
+
+        <div className="grid grid-cols-1 gap-4 mb-8 md:grid-cols-4">
+          <Card className="border border-white/10 bg-white/10 text-white backdrop-blur-xl">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-white/80">Money at Risk</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-rose-300">${kpis.moneyAtRisk.toLocaleString()}</div>
+              <p className="mt-1 text-xs text-white/70">{kpis.atRiskInvoices} overdue invoices need follow-up now</p>
+            </CardContent>
+          </Card>
+          <Card className="border border-white/10 bg-white/10 text-white backdrop-blur-xl">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-white/80">Avg Payment Delay</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{kpis.averagePaymentDelay} days</div>
+            </CardContent>
+          </Card>
+          <Card className="border border-white/10 bg-white/10 text-white backdrop-blur-xl">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-white/80">Avg Response Time</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{kpis.averageResponseHours}h</div>
+            </CardContent>
+          </Card>
+          <Card className="border border-white/10 bg-white/10 text-white backdrop-blur-xl">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm text-white/80">Supplier Risk Score</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{kpis.supplierRiskScore}/100</div>
+              <p className="mt-1 text-xs text-white/70">
+                {kpis.supplierRiskScore >= 70
+                  ? "High risk: immediate action recommended"
+                  : kpis.supplierRiskScore >= 40
+                    ? "Moderate risk: monitor closely"
+                    : "Low risk: stable supplier behavior"}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="mb-8 border border-white/10 bg-white/10 text-white backdrop-blur-xl">
+          <CardHeader>
+            <CardTitle className="text-xl">KPI Story</CardTitle>
+            <CardDescription className="text-white/80">Actionable business view for faster decisions</CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-3 text-sm md:grid-cols-3">
+            <div className="rounded-lg border border-rose-300/25 bg-rose-500/10 p-3">
+              <p className="text-rose-200">Money at risk</p>
+              <p className="font-semibold text-white">${kpis.moneyAtRisk.toLocaleString()}</p>
+            </div>
+            <div className="rounded-lg border border-amber-300/25 bg-amber-500/10 p-3">
+              <p className="text-amber-200">Average payment delay</p>
+              <p className="font-semibold text-white">{kpis.averagePaymentDelay} days</p>
+            </div>
+            <div className="rounded-lg border border-emerald-300/25 bg-emerald-500/10 p-3">
+              <p className="text-emerald-200">Recovery rate</p>
+              <p className="font-semibold text-white">{kpis.recoveryRate}%</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="mb-8 border border-white/10 bg-white/10 text-white backdrop-blur-xl">
+          <CardHeader>
+            <CardTitle className="text-xl">Alerts</CardTitle>
+            <CardDescription className="text-white/80">High-risk and overdue invoice notifications</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {alerts.length === 0 ? (
+              <p className="text-white/70">No alerts right now.</p>
+            ) : (
+              <div className="space-y-3">
+                {alerts.slice(0, 5).map((alert) => (
+                  <div key={alert.id} className="rounded-lg border border-white/10 bg-black/25 p-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-white">{alert.title || "Supplier email"}</p>
+                        <p className="text-xs text-white/70">{alert.message}</p>
+                      </div>
+                      <Badge className={
+                        alert.level === "high"
+                          ? "bg-rose-500/85 text-white"
+                          : alert.level === "medium"
+                            ? "bg-amber-500/85 text-white"
+                            : "bg-emerald-500/85 text-white"
+                      }>
+                        {alert.level.toUpperCase()}
+                      </Badge>
+                    </div>
+                    <p className="mt-1 text-xs text-white/60">{new Date(alert.createdAt).toLocaleString()}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Recent Analyses Table with Glass Effect */}
         <div ref={tableRef} className="opacity-0">
