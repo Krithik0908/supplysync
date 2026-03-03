@@ -27,15 +27,15 @@ export function EmailPasteForm() {
   }
 
   return (
-    <Card className="w-full max-w-2xl">
+    <Card className="w-full max-w-2xl border-white/10 bg-white/10 text-white backdrop-blur-xl">
       <CardHeader>
         <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-lg bg-primary">
-            <Mail className="size-5 text-primary-foreground" />
+          <div className="flex size-10 items-center justify-center rounded-lg bg-linear-to-br from-blue-500 to-purple-600 shadow-lg shadow-purple-500/20">
+            <Mail className="size-5 text-white" />
           </div>
           <div>
             <CardTitle className="text-xl">Paste Your Email</CardTitle>
-            <CardDescription>
+            <CardDescription className="text-white/65">
               Paste the full email content below and submit it for processing.
             </CardDescription>
           </div>
@@ -51,10 +51,10 @@ export function EmailPasteForm() {
             placeholder="Paste your email here..."
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="min-h-[240px] resize-y text-base leading-relaxed"
+            className="min-h-60 resize-y border-white/15 bg-black/35 text-base leading-relaxed text-white placeholder:text-white/45"
           />
           <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-white/60">
               {email.length > 0
                 ? `${email.length.toLocaleString()} characters`
                 : "No content yet"}
@@ -62,6 +62,7 @@ export function EmailPasteForm() {
             <Button
               type="submit"
               size="lg"
+              className="bg-linear-to-r from-blue-500 to-violet-500 text-white hover:from-blue-400 hover:to-violet-400"
               disabled={!email.trim()}
             >
               <Send className="size-4 mr-2" />

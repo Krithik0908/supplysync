@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, AlertCircle, FileText } from "lucide-react";
+import { Clock, AlertCircle, FileText, Activity } from "lucide-react";
 
 interface Analysis {
   id: string;
@@ -83,9 +83,9 @@ export default function HistoryPage() {
   }, []);
 
   const riskColor = {
-    low: "bg-green-100 text-green-800 border-green-200",
-    medium: "bg-yellow-100 text-yellow-800 border-yellow-200",
-    high: "bg-red-100 text-red-800 border-red-200",
+    low: "border-emerald-300/40 bg-emerald-500/20 text-emerald-200",
+    medium: "border-amber-300/40 bg-amber-500/20 text-amber-200",
+    high: "border-rose-300/40 bg-rose-500/20 text-rose-200",
   };
 
   if (loading) {
@@ -99,49 +99,55 @@ export default function HistoryPage() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Email History</h1>
-        <Button variant="outline" onClick={() => router.push("/dashboard")}>
+        <div>
+          <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-cyan-300/25 bg-cyan-500/15 px-3 py-1 text-xs font-medium text-cyan-200">
+            <Activity className="h-3.5 w-3.5" />
+            Timeline of analyzed supplier emails
+          </div>
+          <h1 className="bg-linear-to-r from-white to-white/70 bg-clip-text text-3xl font-bold text-transparent">Email History</h1>
+        </div>
+        <Button variant="outline" className="border-white/20 bg-white/5 text-white hover:bg-white/10" onClick={() => router.push("/dashboard")}>
           Back to Dashboard
         </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {analyses.map((analysis) => (
-          <Card key={analysis.id} className="flex flex-col hover:shadow-lg transition-shadow">
+          <Card key={analysis.id} className="flex flex-col border-white/10 bg-white/10 text-white backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/30">
             <CardHeader>
               <div className="flex justify-between items-start">
                 <Badge className={riskColor[analysis.riskLevel]}>
                   {analysis.riskLevel.toUpperCase()}
                 </Badge>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-white/55">
                   {new Date(analysis.createdAt).toLocaleDateString()}
                 </span>
               </div>
               <CardTitle className="text-lg line-clamp-2 mt-2">
                 {analysis.purpose}
               </CardTitle>
-              <CardDescription className="line-clamp-3">
+              <CardDescription className="line-clamp-3 text-white/65">
                 {analysis.emailContent.substring(0, 150)}...
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex-grow">
+            <CardContent className="grow">
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className={analysis.paymentDelayed ? "text-red-600 font-medium" : "text-green-600"}>
+                  <Clock className="h-4 w-4 text-white/60" />
+                  <span className={analysis.paymentDelayed ? "font-medium text-rose-300" : "font-medium text-emerald-300"}>
                     Payment {analysis.paymentDelayed ? "⚠️ Delayed" : "✅ On Time"}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 text-muted-foreground" />
-                  <span className="line-clamp-1">{analysis.suggestedAction}</span>
+                  <AlertCircle className="h-4 w-4 text-white/60" />
+                  <span className="line-clamp-1 text-white/85">{analysis.suggestedAction}</span>
                 </div>
               </div>
             </CardContent>
             <CardFooter>
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full border-white/20 bg-white/5 text-white hover:bg-white/10"
                 onClick={() => {
                   sessionStorage.setItem("analysis", JSON.stringify(analysis));
                   sessionStorage.setItem("email", analysis.emailContent);

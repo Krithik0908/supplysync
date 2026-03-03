@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/navbar";
+import { BackgroundPathsBackdrop } from "@/components/ui/background-paths";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,12 +32,15 @@ export default function RootLayout({
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange
         >
-          <Navbar />
-          {children}
+          <BackgroundPathsBackdrop className="fixed inset-0 -z-10 pointer-events-none" />
+          <div className="relative z-10">
+            <Navbar />
+            {children}
+          </div>
         </ThemeProvider>
       </body>
     </html>

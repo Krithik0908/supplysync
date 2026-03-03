@@ -61,10 +61,10 @@ export function EmailAnalysis() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
+      <div className="flex min-h-100 items-center justify-center">
         <div className="text-center">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Analyzing email with AI...</p>
+          <p className="mt-4 text-white/65">Analyzing email with AI...</p>
         </div>
       </div>
     );
@@ -72,10 +72,10 @@ export function EmailAnalysis() {
 
   if (error) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
+      <div className="flex min-h-100 items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 font-medium">Something went wrong. Please try again.</p>
-          <Button className="mt-4" onClick={() => router.push("/")}>
+          <p className="font-medium text-red-300">Something went wrong. Please try again.</p>
+          <Button className="mt-4 bg-white/10 text-white hover:bg-white/20" onClick={() => router.push("/")}>
             Go Back
           </Button>
         </div>
@@ -86,31 +86,31 @@ export function EmailAnalysis() {
   if (!analysis) return null;
 
   const riskColor = {
-    low: "bg-green-100 text-green-800 border-green-200",
-    medium: "bg-yellow-100 text-yellow-800 border-yellow-200",
-    high: "bg-red-100 text-red-800 border-red-200",
+    low: "border-emerald-300/40 bg-emerald-500/20 text-emerald-200",
+    medium: "border-amber-300/40 bg-amber-500/20 text-amber-200",
+    high: "border-rose-300/40 bg-rose-500/20 text-rose-200",
   };
 
   return (
     <div className="w-full max-w-3xl mx-auto space-y-6">
-      <Card>
+      <Card className="border-white/10 bg-white/10 text-white backdrop-blur-xl">
         <CardHeader>
           <CardTitle className="text-2xl">Email Analysis</CardTitle>
-          <CardDescription>
+          <CardDescription className="text-white/65">
             AI-powered insights from your supplier email
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div>
-            <h3 className="text-sm font-medium text-muted-foreground mb-2">
+          <div className="rounded-xl border border-white/10 bg-black/25 p-4">
+            <h3 className="mb-2 text-sm font-medium text-white/60">
               Email Purpose
             </h3>
             <p className="text-lg font-semibold">{analysis.purpose}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">
+            <div className="rounded-xl border border-white/10 bg-black/25 p-4">
+              <h3 className="mb-2 text-sm font-medium text-white/60">
                 Payment Status
               </h3>
               <div className="flex items-center gap-2">
@@ -118,8 +118,8 @@ export function EmailAnalysis() {
                 <span
                   className={
                     analysis.paymentDelayed
-                      ? "text-red-600 font-medium"
-                      : "text-green-600 font-medium"
+                      ? "font-medium text-rose-300"
+                      : "font-medium text-emerald-300"
                   }
                 >
                   {analysis.paymentDelayed
@@ -128,8 +128,8 @@ export function EmailAnalysis() {
                 </span>
               </div>
             </div>
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">
+            <div className="rounded-xl border border-white/10 bg-black/25 p-4">
+              <h3 className="mb-2 text-sm font-medium text-white/60">
                 Risk Level
               </h3>
               <Badge className={`${riskColor[analysis.riskLevel]} px-3 py-1`}>
@@ -138,7 +138,7 @@ export function EmailAnalysis() {
             </div>
           </div>
 
-          <Alert>
+          <Alert className="border-white/10 bg-black/25 text-white">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Suggested Action</AlertTitle>
             <AlertDescription>{analysis.suggestedAction}</AlertDescription>
@@ -148,7 +148,7 @@ export function EmailAnalysis() {
             <Button
               onClick={handleGenerate}
               size="lg"
-              className="w-full md:w-auto"
+              className="w-full bg-linear-to-r from-blue-500 to-violet-500 text-white hover:from-blue-400 hover:to-violet-400 md:w-auto"
             >
               Generate Follow-up Email
               <ArrowRight className="ml-2 h-4 w-4" />
