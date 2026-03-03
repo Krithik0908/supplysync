@@ -6,14 +6,14 @@ SupplySync helps small suppliers manage emails from large companies instantly. P
 
  ✨ Features
 
-- **🤖 AI Email Analysis** - Instant analysis using Groq API (Llama 3.3 70B)
-- **💰 Payment Delay Detection** - Automatically identifies delayed payments
-- **⚠️ Risk Assessment** - Scores emails as Low, Medium, or High risk
-- **📝 Auto-Generated Responses** - Creates professional follow-up emails instantly
-- **📊 Interactive Dashboard** - Track all analyzed emails with stats and insights
-- **📚 Email History** - Never lose track of important communications
-- **📄 PDF Generator** - Create professional payment reminder documents
-- **🎨 Beautiful UI** - Modern, responsive design with 21st.dev components
+- 🤖 AI Email Analysis - Instant analysis using Groq API (Llama 3.3 70B)
+- 💰 Payment Delay Detection - Automatically identifies delayed payments
+- ⚠️ Risk Assessment - Scores emails as Low, Medium, or High risk
+- 📝 Auto-Generated Responses - Creates professional follow-up emails instantly
+- 📊 Interactive Dashboard - Track all analyzed emails with stats and insights
+- 📚 Email History - Never lose track of important communications
+- 📄 PDF Generator - Create professional payment reminder documents
+- 🎨 Beautiful UI - Modern, responsive design with 21st.dev components
 
  🚀 Live Demo
 
