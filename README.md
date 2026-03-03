@@ -21,13 +21,13 @@ SupplySync helps small suppliers manage emails from large companies instantly. P
 
  🛠️ Tech Stack
 
-- **Frontend:** Next.js 14, TypeScript, Tailwind CSS, 21st.dev components
-- **UI Library:** shadcn/ui, Framer Motion, Lucide Icons
-- **AI:** Groq API with Llama 3.3 70B
-- **Database:** MongoDB Atlas
-- **PDF Generation:** React PDF
-- **Deployment:** Vercel
-- **Animations:** Anime.js
+- Frontend: Next.js 14, TypeScript, Tailwind CSS, 21st.dev components
+- UI Library: shadcn/ui, Framer Motion, Lucide Icons
+- AI: Groq API with Llama 3.3 70B
+- Database: MongoDB Atlas
+- PDF Generation: React PDF
+- Deployment: Vercel
+- Animations: Anime.js
 
 
 
@@ -135,25 +135,14 @@ MIT License - feel free to use this project for your own purposes.
 
  📧 Contact
 
-Krithik 
+Krithik (krithiksaravanan0902@gmail.com)
 
 Project Link: (https://github.com/Krithik0908/supplysync)
 ```
 
  Instructions:
 
-1. Replace placeholder text:
-   - `your-vercel-url.vercel.app` with your actual Vercel URL
-   - Add actual screenshot links (upload images to your repo and use their paths)
-   - Update Twitter handle if you want
-   - Add any additional features you've implemented
-
-2. To add screenshots:
-   - Take screenshots of your app
-   - Save them in a `/public/screenshots/` folder
-   - Use paths like `/screenshots/home.png`
-
-3. Commit and push:
+Commit and push:
 ```bash
 git add README.md
 git commit -m "Add comprehensive README"
