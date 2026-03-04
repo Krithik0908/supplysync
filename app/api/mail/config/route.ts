@@ -9,6 +9,10 @@ interface MailConfig {
   appPassword: string;
 }
 
+function jsonError(message: string, status = 500) {
+  return NextResponse.json({ error: message }, { status });
+}
+
 export async function GET() {
   try {
     const supplierKey = SUPPLIER_KEY;
@@ -32,7 +36,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Failed to fetch mail config:", error);
-    return NextResponse.json({ error: "Failed to fetch mail config" }, { status: 500 });
+    return jsonError("Failed to fetch mail config", 500);
   }
 }
 
@@ -40,11 +44,18 @@ export async function POST(req: NextRequest) {
   try {
     const supplierKey = SUPPLIER_KEY;
 
-    const body = (await req.json()) as { config?: MailConfig };
+    const rawBody = await req.text();
+    let body: { config?: MailConfig };
+    try {
+      body = JSON.parse(rawBody) as { config?: MailConfig };
+    } catch {
+      return jsonError("Invalid JSON request body", 400);
+    }
+
     const config = body.config;
 
     if (!config?.email || !config?.appPassword || !config.provider) {
-      return NextResponse.json({ error: "provider, email, and appPassword are required" }, { status: 400 });
+      return jsonError("provider, email, and appPassword are required", 400);
     }
 
     const defaults = getMailProviderDefaults(config.provider);
@@ -68,9 +79,9 @@ export async function POST(req: NextRequest) {
       { upsert: true }
     );
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error("Failed to save mail config:", error);
-    return NextResponse.json({ error: "Failed to save mail config" }, { status: 500 });
+    return jsonError("Failed to save mail config", 500);
   }
 }

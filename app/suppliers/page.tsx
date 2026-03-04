@@ -138,15 +138,23 @@ export default function SuppliersPage() {
         body: JSON.stringify({ config: mailConfig }),
       });
 
+      const responseText = await response.text();
+      let responseData: { error?: string } | null = null;
+      try {
+        responseData = responseText ? (JSON.parse(responseText) as { error?: string }) : null;
+      } catch {
+        responseData = null;
+      }
+
       if (!response.ok) {
-        throw new Error("Failed to save mail integration");
+        throw new Error(responseData?.error || "Failed to save mail integration");
       }
 
       setMailSaved(true);
       setTimeout(() => setMailSaved(false), 2000);
     } catch (error) {
       console.error("Failed to save mail config:", error);
-      setMailError("Failed to save mail integration settings.");
+      setMailError(error instanceof Error ? error.message : "Failed to save mail integration settings.");
     }
   };
 
