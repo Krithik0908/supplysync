@@ -1,7 +1,9 @@
 ```markdown
  SupplySync - AI-Powered Email Assistant for Small Suppliers
 
-!(architecture.png)
+## 🏗 Architecture
+
+![SupplySync Architecture](architecture.png)
 
 SupplySync helps small suppliers manage emails from large companies instantly. Paste any supplier email and get AI-powered analysis, payment delay detection, risk assessment, and auto-generated responses.
 
