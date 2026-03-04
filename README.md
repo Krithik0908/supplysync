@@ -21,7 +21,7 @@ SupplySync helps small suppliers manage emails from large companies instantly. P
 
  🛠️ Tech Stack
 
-- Frontend: Next.js 14, TypeScript, Tailwind CSS, 21st.dev components
+- Frontend: Next.js 16.1.6, TypeScript, Tailwind CSS, 21st.dev components
 - UI Library: shadcn/ui, Framer Motion, Lucide Icons
 - AI: Groq API with Llama 3.3 70B
 - Database: MongoDB Atlas
