@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, AlertCircle, FileText, Activity } from "lucide-react";
+import { Clock, AlertCircle, FileText, Activity, Download } from "lucide-react";
 
 interface Analysis {
   id: string;
@@ -23,6 +23,7 @@ interface Analysis {
   draftedReply: string;
   createdAt: string;
   emailContent: string;
+  invoiceAmount?: number;
 }
 
 const FALLBACK_DATA: Analysis[] = [
@@ -96,6 +97,39 @@ export default function HistoryPage() {
     return true;
   });
 
+  const escapeCsvValue = (value: string | number | boolean | null | undefined) => {
+    const text = String(value ?? "");
+    if (text.includes(",") || text.includes("\n") || text.includes("\"")) {
+      return `"${text.replace(/\"/g, '""')}"`;
+    }
+    return text;
+  };
+
+  const handleExportCsv = () => {
+    const header = ["Date", "Purpose", "Risk Level", "Payment Delayed", "Suggested Action", "Amount"];
+    const rows = filteredAnalyses.map((analysis) => [
+      new Date(analysis.createdAt).toLocaleDateString(),
+      analysis.purpose,
+      analysis.riskLevel.toUpperCase(),
+      analysis.paymentDelayed ? "Yes" : "No",
+      analysis.suggestedAction,
+      Number(analysis.invoiceAmount) || 0,
+    ]);
+
+    const csvContent = [header, ...rows]
+      .map((row) => row.map((cell) => escapeCsvValue(cell)).join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    const date = new Date().toISOString().slice(0, 10);
+    link.download = `supplysync-history-${date}.csv`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+  };
+
   const lowCount = analyses.filter((analysis) => analysis.riskLevel === "low").length;
   const mediumCount = analyses.filter((analysis) => analysis.riskLevel === "medium").length;
   const highCount = analyses.filter((analysis) => analysis.riskLevel === "high").length;
@@ -129,9 +163,15 @@ export default function HistoryPage() {
           </div>
           <h1 className="bg-linear-to-r from-white to-white/70 bg-clip-text text-3xl font-bold text-transparent">Email History</h1>
         </div>
-        <Button variant="outline" className="border-white/20 bg-white/5 text-white hover:bg-white/10" onClick={() => router.push("/dashboard")}>
-          Back to Dashboard
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" className="border-white/20 bg-white/5 text-white hover:bg-white/10" onClick={handleExportCsv}>
+            <Download className="mr-2 h-4 w-4" />
+            Export CSV
+          </Button>
+          <Button variant="outline" className="border-white/20 bg-white/5 text-white hover:bg-white/10" onClick={() => router.push("/dashboard")}>
+            Back to Dashboard
+          </Button>
+        </div>
       </div>
 
       <Card className="border-white/10 bg-white/10 text-white backdrop-blur-xl">
