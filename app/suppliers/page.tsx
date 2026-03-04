@@ -43,6 +43,10 @@ export default function SuppliersPage() {
   const [mailConfig, setMailConfig] = useState<MailConfig>(DEFAULT_MAIL_CONFIG);
   const [mailSaved, setMailSaved] = useState(false);
   const [mailError, setMailError] = useState("");
+  const [disconnectMessage, setDisconnectMessage] = useState("");
+  const [disconnecting, setDisconnecting] = useState(false);
+  const [showDisconnectPopup, setShowDisconnectPopup] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [syncingInbox, setSyncingInbox] = useState(false);
   const [lastSyncMessage, setLastSyncMessage] = useState("");
   const router = useRouter();
@@ -124,12 +128,14 @@ export default function SuppliersPage() {
   const handleMailChange = (field: keyof MailConfig, value: string) => {
     setMailSaved(false);
     setMailError("");
+    setDisconnectMessage("");
     setMailConfig((previous) => ({ ...previous, [field]: value }));
   };
 
   const handleSaveMailConfig = async () => {
     setMailSaved(false);
     setMailError("");
+    setDisconnectMessage("");
 
     try {
       const response = await fetch("/api/mail/config", {
@@ -155,6 +161,46 @@ export default function SuppliersPage() {
     } catch (error) {
       console.error("Failed to save mail config:", error);
       setMailError(error instanceof Error ? error.message : "Failed to save mail integration settings.");
+    }
+  };
+
+  const handleDisconnectMailbox = async (deleteEmailData: boolean) => {
+    setDisconnecting(true);
+    setMailSaved(false);
+    setMailError("");
+    setDisconnectMessage("");
+
+    try {
+      const response = await fetch("/api/mail/config", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deleteEmailData }),
+      });
+
+      const responseText = await response.text();
+      let responseData: { error?: string } | null = null;
+      try {
+        responseData = responseText ? (JSON.parse(responseText) as { error?: string }) : null;
+      } catch {
+        responseData = null;
+      }
+
+      if (!response.ok) {
+        throw new Error(responseData?.error || "Failed to disconnect mailbox");
+      }
+
+      setMailConfig({ ...DEFAULT_MAIL_CONFIG });
+      setDisconnectMessage(
+        deleteEmailData
+          ? "Mailbox disconnected. Stored emails were removed from this website."
+          : "Mailbox disconnected. Stored emails remain on this website."
+      );
+      setShowDisconnectPopup(false);
+      setDeleteConfirmText("");
+    } catch (error) {
+      setMailError(error instanceof Error ? error.message : "Failed to disconnect mailbox.");
+    } finally {
+      setDisconnecting(false);
     }
   };
 
@@ -329,6 +375,19 @@ export default function SuppliersPage() {
               </Button>
               <Button
                 variant="outline"
+                onClick={() => {
+                  setMailError("");
+                  setDisconnectMessage("");
+                  setDeleteConfirmText("");
+                  setShowDisconnectPopup(true);
+                }}
+                disabled={disconnecting}
+                className="border-white/20 bg-white/5 text-white hover:bg-white/10"
+              >
+                {disconnecting ? "Disconnecting..." : "Disconnect Mailbox"}
+              </Button>
+              <Button
+                variant="outline"
                 onClick={handleSyncInbox}
                 disabled={syncingInbox}
                 className="border-white/20 bg-white/5 text-white hover:bg-white/10"
@@ -338,10 +397,64 @@ export default function SuppliersPage() {
             </div>
 
             {mailSaved && <p className="text-sm font-medium text-emerald-300">Mail integration saved successfully.</p>}
+            {disconnectMessage && <p className="text-sm font-medium text-emerald-300">{disconnectMessage}</p>}
             {mailError && <p className="text-sm font-medium text-rose-300">{mailError}</p>}
             {lastSyncMessage && <p className="text-sm font-medium text-cyan-300">{lastSyncMessage}</p>}
           </CardContent>
         </Card>
+
+        {showDisconnectPopup && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4">
+            <div className="w-full max-w-md rounded-xl border border-white/15 bg-neutral-900 p-5 text-white shadow-2xl">
+              <h3 className="text-lg font-semibold">Disconnect Mailbox</h3>
+              <p className="mt-2 text-sm text-white/75">
+                Choose what happens to your synced emails for privacy:
+              </p>
+              <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-white/80">
+                <li>Disconnect only, and keep existing emails on this website</li>
+                <li>Disconnect and remove all synced emails from this website</li>
+              </ul>
+              <div className="mt-4 space-y-2">
+                <label className="text-sm text-white/80">Type DELETE to confirm permanent removal</label>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(event) => setDeleteConfirmText(event.target.value)}
+                  className="w-full rounded-md border border-white/20 bg-white/5 px-3 py-2 text-white placeholder:text-white/45 focus:outline-hidden focus:ring-2 focus:ring-white/30"
+                  placeholder="DELETE"
+                />
+              </div>
+              <div className="mt-5 flex flex-wrap items-center justify-end gap-2">
+                <Button
+                  variant="outline"
+                  className="border-white/20 bg-white/5 text-white hover:bg-white/10"
+                  onClick={() => {
+                    setShowDisconnectPopup(false);
+                    setDeleteConfirmText("");
+                  }}
+                  disabled={disconnecting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-white/20 bg-white/5 text-white hover:bg-white/10"
+                  onClick={() => handleDisconnectMailbox(false)}
+                  disabled={disconnecting}
+                >
+                  Keep Emails
+                </Button>
+                <Button
+                  onClick={() => handleDisconnectMailbox(true)}
+                  disabled={disconnecting || deleteConfirmText.trim() !== "DELETE"}
+                  className="bg-linear-to-r from-rose-500 to-pink-500 text-white hover:from-rose-400 hover:to-pink-400"
+                >
+                  {disconnecting ? "Disconnecting..." : "Delete Emails"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );

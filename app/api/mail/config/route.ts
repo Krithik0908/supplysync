@@ -85,3 +85,53 @@ export async function POST(req: NextRequest) {
     return jsonError("Failed to save mail config", 500);
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const supplierKey = SUPPLIER_KEY;
+
+    let deleteEmailData = false;
+    const rawBody = await req.text();
+    if (rawBody) {
+      try {
+        const parsed = JSON.parse(rawBody) as { deleteEmailData?: boolean };
+        deleteEmailData = Boolean(parsed.deleteEmailData);
+      } catch {
+        return jsonError("Invalid JSON request body", 400);
+      }
+    }
+
+    const client = await clientPromise;
+    const db = client.db();
+    const mailConfigsCollection = db.collection("mailConfigs");
+    const analysesCollection = db.collection("analyses");
+    const alertsCollection = db.collection("alerts");
+
+    const result = await mailConfigsCollection.deleteOne({ supplierKey });
+
+    let deletedAnalyses = 0;
+    let deletedAlerts = 0;
+    if (deleteEmailData) {
+      const [analysisDeleteResult, alertsDeleteResult] = await Promise.all([
+        analysesCollection.deleteMany({ supplierKey }),
+        alertsCollection.deleteMany({ supplierKey }),
+      ]);
+      deletedAnalyses = analysisDeleteResult.deletedCount || 0;
+      deletedAlerts = alertsDeleteResult.deletedCount || 0;
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        disconnected: result.deletedCount > 0,
+        deleteEmailData,
+        deletedAnalyses,
+        deletedAlerts,
+      },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Failed to disconnect mail config:", error);
+    return jsonError("Failed to disconnect mailbox", 500);
+  }
+}
